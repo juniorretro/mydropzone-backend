@@ -1,0 +1,26 @@
+services:
+  - type: web
+    name: mydropzone-api
+    runtime: node
+    plan: free
+    buildCommand: npm install && npm run build && npm run db:migrate
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: mydropzone-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: FRONTEND_URL
+        value: https://mydropzone.pages.dev
+      - key: WHATSAPP_NUMBER
+        value: "237600000000"
+
+databases:
+  - name: mydropzone-db
+    plan: free
+    databaseName: mydropzone
+    user: mydropzone

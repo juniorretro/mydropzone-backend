@@ -1,0 +1,110 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  role      Role     @default(admin)
+  name      String
+  courierId String?
+  createdAt DateTime @default(now())
+}
+
+model Courier {
+  id            String        @id @default(cuid())
+  name          String
+  phone         String
+  zone          String
+  vehicle       VehicleType   @default(moto)
+  totalOrders   Int           @default(0)
+  rating        Float         @default(5.0)
+  status        CourierStatus @default(idle)
+  currentLat    Float?
+  currentLng    Float?
+  activeOrderId String?
+  orders        Order[]
+  createdAt     DateTime      @default(now())
+}
+
+model Order {
+  id              String          @id
+  clientName      String
+  clientPhone     String
+  receiverName    String
+  receiverPhone   String
+  pickupAddress   String
+  deliveryAddress String
+  pickupCity      String?
+  deliveryCity    String?
+  packageType     String
+  weight          Float?
+  description     String?
+  instructions    String?
+  orderType       OrderType
+  serviceSpeed    ServiceSpeed    @default(normal)
+  status          OrderStatus     @default(pending)
+  courierId       String?
+  courierName     String?
+  amount          Int
+  pickupLat       Float?
+  pickupLng       Float?
+  deliveryLat     Float?
+  deliveryLng     Float?
+  courier         Courier?        @relation(fields: [courierId], references: [id])
+  events          TrackingEvent[]
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+}
+
+model TrackingEvent {
+  id        String      @id @default(cuid())
+  orderId   String
+  status    OrderStatus
+  message   String
+  location  String?
+  order     Order       @relation(fields: [orderId], references: [id])
+  createdAt DateTime    @default(now())
+}
+
+enum Role {
+  admin
+  superadmin
+  courier
+}
+
+enum CourierStatus {
+  active
+  idle
+  offline
+}
+
+enum VehicleType {
+  moto
+  voiture
+  velo
+}
+
+enum OrderType {
+  local
+  intercity
+}
+
+enum ServiceSpeed {
+  normal
+  express
+}
+
+enum OrderStatus {
+  pending
+  accepted
+  in_progress
+  delivered
+  cancelled
+}
